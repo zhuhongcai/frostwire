@@ -192,7 +192,20 @@ public final class SearchFragment extends AbstractFragment implements
 
     @Override
     public void onDestroy() {
-        LocalSearchEngine.instance().setListener(null);
+        LocalSearchEngine.instance().setListener(new SearchListener() {
+            @Override
+            public void onResults(long token, List<? extends SearchResult> results) {
+            }
+
+            @Override
+            public void onError(long token, SearchError error) {
+            }
+
+            @Override
+            public void onStopped(long token) {
+                keywordDetector.shutdownHistogramUpdateRequestDispatcher();
+            }
+        });
         super.onDestroy();
     }
 
@@ -414,6 +427,7 @@ public final class SearchFragment extends AbstractFragment implements
         }
 
         currentQuery = query;
+        keywordDetector.shutdownHistogramUpdateRequestDispatcher();
         LocalSearchEngine.instance().performSearch(query);
         searchProgress.setProgressEnabled(true);
         showSearchView(getView());
