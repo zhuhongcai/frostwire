@@ -26,6 +26,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -110,24 +111,34 @@ public final class KeywordFilterDrawerView extends LinearLayout implements Keywo
                 return actionId == EditorInfo.IME_ACTION_DONE && onKeywordEntered(v);
             }
         });
-        findViewById(R.id.view_drawer_search_filters_search_sources_textview).setOnClickListener(new OnClickListener() {
+
+        // Init events for tag panel visibility toggling on sub-title and expand/minimize icons
+        OnClickListener searchSourcesToggler = new OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleTagsContainer(R.id.view_drawer_search_filters_search_sources);
+                toggleTagsContainer(R.id.view_drawer_search_filters_search_sources, R.id.view_drawer_search_filters_search_sources_expand_contract_imageview);
             }
-        });
-        findViewById(R.id.view_drawer_search_filters_file_extensions_textview).setOnClickListener(new OnClickListener() {
+        };
+        findViewById(R.id.view_drawer_search_filters_search_sources_textview).setOnClickListener(searchSourcesToggler);
+        findViewById(R.id.view_drawer_search_filters_search_sources_expand_contract_imageview).setOnClickListener(searchSourcesToggler);
+
+        OnClickListener fileExtensionsToggler = new OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleTagsContainer(R.id.view_drawer_search_filters_file_extensions);
+                toggleTagsContainer(R.id.view_drawer_search_filters_file_extensions, R.id.view_drawer_search_filters_file_extensions_expand_contract_imageview);
             }
-        });
-        findViewById(R.id.view_drawer_search_filters_file_names_textview).setOnClickListener(new OnClickListener() {
+        };
+        findViewById(R.id.view_drawer_search_filters_file_extensions_textview).setOnClickListener(fileExtensionsToggler);
+        findViewById(R.id.view_drawer_search_filters_file_extensions_expand_contract_imageview).setOnClickListener(fileExtensionsToggler);
+
+        OnClickListener fileNamesToggler = new OnClickListener() {
             @Override
             public void onClick(View v) {
-                toggleTagsContainer(R.id.view_drawer_search_filters_file_names);
+                toggleTagsContainer(R.id.view_drawer_search_filters_file_names, R.id.view_drawer_search_filters_search_file_names_contract_imageview);
             }
-        });
+        };
+        findViewById(R.id.view_drawer_search_filters_file_names_textview).setOnClickListener(fileNamesToggler);
+        findViewById(R.id.view_drawer_search_filters_search_file_names_contract_imageview).setOnClickListener(fileNamesToggler);
     }
 
     private void onExitButtonClicked() {
@@ -138,22 +149,26 @@ public final class KeywordFilterDrawerView extends LinearLayout implements Keywo
         }
     }
 
-    private void toggleTagsContainer(int containerId) {
+    private void toggleTagsContainer(int containerId, int expandContractIconImageViewId) {
         View v = findViewById(containerId);
         v.setVisibility(v.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        ImageView expandContractIcon = (ImageView) findViewById(expandContractIconImageViewId);
+        expandContractIcon.setImageResource(v.getVisibility() == View.VISIBLE ? R.drawable.filter_expand : R.drawable.filter_minimize);
     }
 
 
     private void resetTagsContainers() {
-        resetTagsContainer(R.id.view_drawer_search_filters_search_sources);
-        resetTagsContainer(R.id.view_drawer_search_filters_file_extensions);
-        resetTagsContainer(R.id.view_drawer_search_filters_file_names);
+        resetTagsContainer(R.id.view_drawer_search_filters_search_sources, R.id.view_drawer_search_filters_search_sources_expand_contract_imageview);
+        resetTagsContainer(R.id.view_drawer_search_filters_file_extensions, R.id.view_drawer_search_filters_file_extensions_expand_contract_imageview);
+        resetTagsContainer(R.id.view_drawer_search_filters_file_names, R.id.view_drawer_search_filters_search_file_names_contract_imageview);
     }
 
-    private void resetTagsContainer(int containerId) {
+    private void resetTagsContainer(int containerId, int expandContractIconImageViewId) {
         FlowLayout flowLayout = (FlowLayout) findViewById(containerId);
         flowLayout.removeAllViews();
         flowLayout.setVisibility(View.VISIBLE);
+        ImageView expandContractIcon = (ImageView) findViewById(expandContractIconImageViewId);
+        expandContractIcon.setImageResource(R.drawable.filter_expand);
     }
 
     private void showAllContainerTags(int containerId) {
