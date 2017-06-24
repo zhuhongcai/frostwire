@@ -24,9 +24,12 @@ import com.frostwire.regex.Matcher;
 import com.frostwire.regex.Pattern;
 
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created on 11/24/16.
@@ -149,14 +152,38 @@ public class KeywordFilter {
     }
 
     public static boolean passesFilterPipeline(final SearchResult sr, final List<KeywordFilter> filterPipeline) {
-        boolean accepted = true;
         String haystack = getSearchResultHaystack(sr);
+        // Group Filters by Feature so we can make the following search.
+        // or by feature, and by different feature.
+        // Eg. (sourceA || sourceB) && (extensionA || extensionB) && (filenameX || filenameY)
+        Map<KeywordDetector.Feature, List<KeywordFilter>>  featureFilters = new HashMap<>();
         Iterator<KeywordFilter> it = filterPipeline.iterator();
-        while (accepted && it.hasNext()) {
+        while (it.hasNext()) {
             KeywordFilter filter = it.next();
-            accepted = filter.accept(haystack);
+            List<KeywordFilter> filters = featureFilters.get(filter.feature);
+            if (filters == null) {
+                filters = new LinkedList<>();
+                featureFilters.put(filter.feature, filters);
+            }
+            filters.add(filter);
         }
-        return accepted;
+        // now depending on the features that we have we'll have N Feature conditions we'll AND.
+        Set<KeywordDetector.Feature> features = featureFilters.keySet();
+
+
+        for (KeywordDetector.Feature feature : features) {
+            boolean featureResult = false;
+            List<KeywordFilter> keywordFilters = featureFilters.get(feature);
+            for (KeywordFilter filter : keywordFilters) {
+                featureResult |= filter.accept(haystack);
+            }
+            if (!featureResult) {
+                return false; // since the final query is an AND (featureA) && (featureB)
+                // the moment we have a failure on a feature the logic is shortcuited.
+            }
+
+        }
+        return true;
     }
 
     public static String cleanQuery(String query, List<KeywordFilter> keywordFilters) {

@@ -192,20 +192,8 @@ public final class SearchFragment extends AbstractFragment implements
 
     @Override
     public void onDestroy() {
-        LocalSearchEngine.instance().setListener(new SearchListener() {
-            @Override
-            public void onResults(long token, List<? extends SearchResult> results) {
-            }
-
-            @Override
-            public void onError(long token, SearchError error) {
-            }
-
-            @Override
-            public void onStopped(long token) {
-                keywordDetector.shutdownHistogramUpdateRequestDispatcher();
-            }
-        });
+        LocalSearchEngine.instance().setListener(null);
+        keywordDetector.shutdownHistogramUpdateRequestDispatcher();
         super.onDestroy();
     }
 
